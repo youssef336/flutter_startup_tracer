@@ -1,3 +1,5 @@
+<p align="center"><a href="README.ar.md">العربية</a></p>
+
 <h1 align="center">Flutter Startup Tracer</h1>
 
 <p align="center">
@@ -5,6 +7,7 @@
 </p>
 
 <p align="center">
+  <a href="https://pub.dev/packages/flutter_startup_tracer"><img src="https://img.shields.io/pub/v/flutter_startup_tracer?style=for-the-badge&logo=dart&label=pub.dev" alt="pub.dev"/></a>
   <img src="https://img.shields.io/badge/Flutter-plugin-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
   <img src="https://img.shields.io/badge/Dart-3.5%2B-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart">
   <img src="https://img.shields.io/badge/Android-Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
@@ -13,7 +16,7 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT">
 </p>
 
-> **English summary.** `flutter_startup_tracer` measures and explains app startup for any
+> **Summary.** `flutter_startup_tracer` measures and explains app startup for any
 > Flutter app. Call `StartupTracer.start()` on the first line of `main`, wrap your init calls in
 > `trace.phase(...)` / `trace.parallel({...})`, start the app with `trace.runApp(...)`, and mark
 > the moment your first real screen is usable with `markInteractive('home')`. You get one
@@ -25,52 +28,45 @@
 > slow phases to defer, serial awaits that could run in parallel, a heavy first build, a slow
 > native start, and a warning when you measured in debug mode. No dependencies beyond Flutter.
 
-<div dir="rtl">
+You add one line at the start of `main`, wrap your init in `phase` and `parallel`, and the package
+tells you where your app spends its time, from the moment the OS starts the process until the user
+can use the first screen, and what to defer or run in parallel so it opens faster.
 
-بتحط سطر واحد في أول `main`، وتلف الـ init بتاعك في `phase` و `parallel`، والباكدج يقولك
-الـ app بتاعك بياخد وقته فين من ساعة ما الـ OS بدأ الـ process لحد ما المستخدم يقدر يستخدم
-أول شاشة، وإيه اللي تأجله أو تشغّله بالتوازي عشان يفتح أسرع.
+## ✨ What it does
 
-## ✨ بيعمل إيه
+- ⏱ **Measures everything from the start of `main`**: every `phase` (sync or async), phases nested
+  inside each other, and for `parallel` you get the **wall time** (what you actually waited) next to
+  the **sum** of the tasks (what you would have waited if you ran them one after another).
+- 📱 **Native process start time**: on Android from
+  `Process.getStartRequestedElapsedRealtime` (or `getStartElapsedRealtime` before API 33),
+  and on iOS from `sysctl(KERN_PROC_PID)`, together with detection of iOS **pre-warming**. On
+  web/desktop and in tests it reports "unknown" and doesn't crash.
+- 🖼 **First frame**: `StartupTracerScope` records `runApp`, when the first frame was built, and when
+  the engine actually rasterized it (`FrameTiming.rasterFinishWallTime`), so you're not just measuring
+  "the code finished", you're measuring "the screen appeared".
+- ✅ **"The user can use it"**: `markInteractive('home')` from the first real screen once its data
+  has arrived.
+- 💤 **`deferred`**: things the first screen doesn't need (ads, analytics…) run after the first frame
+  and are measured separately, outside the critical path.
+- 📊 **The report**: in the console as an ASCII waterfall, or `toMarkdown()` to put in a PR, or
+  `toJson()` to send to any backend.
+- 🧭 **Advice**: tells you what to defer, what could be `parallel`, whether the first build is heavy,
+  whether the native start is slow, or whether you're measuring in debug in the first place.
+- 🔬 **DevTools**: every phase shows up in the Performance view as timeline events.
+- 🏷 **Banner**: a small banner over the app that shows the number for 5 seconds (debug/profile only).
 
-- ⏱ **بيقيس كل حاجة من أول `main`**: كل `phase` (sync أو async)، والمتداخل جوه بعض،
-  والـ `parallel` بيطلعلك فيه الـ **wall time** (اللي استنيته فعلًا) جنب **مجموع** المهام
-  (اللي كنت هتستناه لو شغلتهم ورا بعض).
-- 📱 **وقت بداية الـ process من الـ native**: على Android من
-  `Process.getStartRequestedElapsedRealtime` (أو `getStartElapsedRealtime` قبل API 33)،
-  وعلى iOS من `sysctl(KERN_PROC_PID)`، ومعاه كشف الـ **pre-warming** بتاع iOS. على
-  web/desktop وفي التستات بيكتب «unknown» ومبيقعش.
-- 🖼 **أول frame**: `StartupTracerScope` بيسجل `runApp`، وإمتى أول frame اتبنى، وإمتى الـ engine
-  رسمه فعلًا (`FrameTiming.rasterFinishWallTime`)، فمش بتقيس «الكود خلص» وخلاص، بتقيس «الشاشة
-  ظهرت».
-- ✅ **«المستخدم يقدر يستخدمه»**: `markInteractive('home')` من أول شاشة حقيقية بعد ما الداتا
-  بتاعتها توصل.
-- 💤 **`deferred`**: الحاجات اللي مش لازمة لأول شاشة (إعلانات، analytics…) بتتشغل بعد أول frame
-  وبتتقاس لوحدها بره الـ critical path.
-- 📊 **التقرير**: في الـ console بـ ASCII waterfall، أو `toMarkdown()` تحطه في PR، أو `toJson()`
-  تبعته لأي backend.
-- 🧭 **نصايح**: بيقولك تأجل إيه، وإيه اللي ممكن يبقى `parallel`، ولو أول build تقيل، ولو الـ
-  native start بطيء، ولو انت بتقيس في debug أصلًا.
-- 🔬 **DevTools**: كل phase بتطلع في الـ Performance view كـ timeline events.
-- 🏷 **Banner** صغير فوق الـ app بيعرض الرقم 5 ثواني (debug/profile بس).
+## 📦 Installation
 
-## 📦 التثبيت
-
-لسه مش على pub.dev، فبتاخده من GitHub:
+Add it from [pub.dev](https://pub.dev/packages/flutter_startup_tracer):
 
 ```yaml
 dependencies:
-  flutter_startup_tracer:
-    git:
-      url: https://github.com/youssef336/flutter_startup_tracer.git
-      ref: v0.1.0
+  flutter_startup_tracer: ^0.1.0
 ```
 
-بعدها `flutter pub get`. مفيش أي setup native: الـ plugin بيتسجل لوحده على Android و iOS.
+Then `flutter pub get`. There is no native setup: the plugin registers itself on Android and iOS.
 
-## 🚀 الاستخدام
-
-</div>
+## 🚀 Usage
 
 ```dart
 import 'dart:async';
@@ -104,13 +100,10 @@ Future<void> main() async {
 StartupTracer.of(context).markInteractive('home');
 ```
 
-<div dir="rtl">
+### 🧾 What the report looks like
 
-### 🧾 شكل التقرير
-
-ده تقرير حقيقي من الـ `example/` على iOS simulator (debug، فالأرقام أبطأ من الحقيقة):
-
-</div>
+This is a real report from `example/` on the iOS simulator (debug, so the numbers are slower than
+in reality):
 
 ```text
 == Startup trace (debug) - total 1154 ms ==
@@ -146,88 +139,90 @@ Advice:
   [!] 'crash reporting SDK', 'feature flags', 'remote strings' ran one after another (434 ms in total). If they do not depend on each other, run them with parallel({...}): best case about 228 ms, saving up to 206 ms. ...
 ```
 
-<div dir="rtl">
+## 🧭 Advice
 
-## 🧭 النصايح
-
-| القاعدة | بتشتغل إمتى | الافتراضي |
+| Rule | When it fires | Default |
 |---|---|---|
-| `debugMode` | التقرير اتعمل في debug | دايمًا |
-| `slowCriticalPhase` | phase قبل `runApp` (أو مهمة جوه `parallel`) خدت وقت كبير ← «أجّلها» | ≥ 100 ms |
-| `serialPhases` | phases async ورا بعض ومحدش فيهم قال `dependsOnPrevious` ← «شغلهم `parallel`» ومعاها التوفير المتوقع | المجموع ≥ 150 ms، وكل واحدة ≥ 20 ms |
-| `heavyFirstBuild` | من `runApp` لأول frame وقت كبير | > 500 ms |
-| `slowNativeStart` | من بداية الـ process لـ `main` كبير | ≥ 1000 ms |
-| `prewarmed` | iOS قال إن الـ process كان pre-warmed، أو الفرق ≥ 10 ثواني ← مبيتحسبش في الإجمالي | — |
-| `failedPhase` | phase رمت exception | — |
+| `debugMode` | The report was produced in debug | Always |
+| `slowCriticalPhase` | A phase before `runApp` (or a task inside `parallel`) took a long time → "defer it" | ≥ 100 ms |
+| `serialPhases` | Async phases one after another, none of which says `dependsOnPrevious` → "run them `parallel`", with the expected saving | Sum ≥ 150 ms, and each ≥ 20 ms |
+| `heavyFirstBuild` | A long time from `runApp` to the first frame | > 500 ms |
+| `slowNativeStart` | A long time from process start to `main` | ≥ 1000 ms |
+| `prewarmed` | iOS said the process was pre-warmed, or the gap is ≥ 10 seconds → not counted in the total | — |
+| `failedPhase` | A phase threw an exception | — |
 
-كل الأرقام بتتغير من `StartupAdviceConfig`. لو phase محتاجة اللي قبلها فعلًا، ابعت
-`dependsOnPrevious: true` والقاعدة بتاعة الـ parallel مش هتقترحها.
+All the thresholds can be changed through `StartupAdviceConfig`. If a phase really does need the one
+before it, pass `dependsOnPrevious: true` and the parallel rule won't suggest it.
 
-## 📤 تودّي التقرير فين
+## 📤 Where to send the report
 
-- `printReport` (شغال افتراضيًا بره release) بيطبع التقرير في الـ console أول ما يخلص.
-- `onReport` بيتنده مرة واحدة بالتقرير النهائي: ابعت `report.toJson()` لـ Crashlytics أو
-  analytics أو الـ logs بتاعتك.
-- `StartupTracer.history` فيه آخر 5 تقارير (`historyLimit`) **في الميموري بس**. مفيش حاجة بتتكتب
-  على الديسك؛ الحفظ عليك من `onReport`.
-- `trace.report()` تقدر تناديه في أي وقت وتاخد snapshot لحد اللحظة دي.
-- `trace.completed` (`ValueListenable`) لو عايز تبني UI على التقرير.
+- `printReport` (on by default outside release) prints the report to the console as soon as it is done.
+- `onReport` is called once with the final report: send `report.toJson()` to Crashlytics,
+  analytics or your logs.
+- `StartupTracer.history` holds the last 5 reports (`historyLimit`) **in memory only**. Nothing is
+  written to disk; persisting is up to you, from `onReport`.
+- `trace.report()` can be called at any time to get a snapshot up to that moment.
+- `trace.completed` (a `ValueListenable`) if you want to build UI on top of the report.
 
-## ✅ التقرير بيخلص إمتى
+## ✅ When the report completes
 
-لما يحصل كل ده: أول frame اتبنى، والـ deferred كلهم خلصوا، ووقت الـ native start اتقرا (أو
-اتعرف إنه unknown)، ولو `waitForInteractive: true` لازم كمان `markInteractive` يتنده.
-الـ deferred بيبدأ أول ما الـ engine يبلّغ إن أول frame اترسم؛ ولو مبلّغش (تستات، headless)
-بيبدأ بعد `deferredFallback` (ثانيتين افتراضيًا) من أول build.
+When all of the following have happened: the first frame was built, all deferred tasks finished,
+the native start time was read (or found to be unknown), and, if `waitForInteractive: true`,
+`markInteractive` was also called.
+Deferred tasks start as soon as the engine reports that the first frame was rasterized; if it
+doesn't report it (tests, headless), they start after `deferredFallback` (2 seconds by default)
+from the first build.
 
-## 🧪 في التستات
+## 🧪 In tests
 
-- `StartupTracer.start(clock: myFakeClock)`: الـ `TracerClock` بيتحقن، فتقدر تتست الأوقات بالظبط.
-- في الـ widget tests ابعت `processStartReader: () async => null`: الـ platform channel الحقيقي
-  بيرد بره الـ fake time بتاع `testWidgets` والتقرير مش هيخلص.
-- `StartupTracer.debugReset()` بينضف `current` و `history` بين التستات.
+- `StartupTracer.start(clock: myFakeClock)`: the `TracerClock` is injectable, so you can test the
+  timings exactly.
+- In widget tests pass `processStartReader: () async => null`: the real platform channel replies
+  outside the fake time of `testWidgets`, and the report would never complete.
+- `StartupTracer.debugReset()` clears `current` and `history` between tests.
 
-## ❓ أسئلة متكررة
+## ❓ FAQ
 
-**ليه الأرقام في debug عالية كده؟** debug بيشغل JIT و asserts ومن غير AOT، فممكن يبقى أبطأ
-مرتين أو تلاتة. قيس بـ `flutter run --profile` أو `--release`، والتقرير نفسه بيحذرك.
+**Why are the numbers so high in debug?** Debug runs JIT and asserts, without AOT, so it can be two
+or three times slower. Measure with `flutter run --profile` or `--release`; the report itself warns
+you.
 
-**ليه مينفعش أنده `ensureInitialized()` جوه `phase`؟** الـ `phase` بتشغل الكود في zone جديدة
-عشان تعرف مين جوه مين (ده اللي بيخلي الـ nesting يشتغل حتى مع `await`). Flutter بيحذر لو الـ
-binding اتعمل في zone و `runApp` في zone تانية. نادِيه بره أي phase، أو جوه `phaseSync`
-(دي مبتعملش zone).
+**Why can't I call `ensureInitialized()` inside a `phase`?** A `phase` runs the code in a new zone so
+it knows what is inside what (that's what makes nesting work even with `await`). Flutter warns if
+the binding is created in one zone and `runApp` runs in another. Call it outside any phase, or
+inside `phaseSync` (which doesn't create a zone).
 
-**«process start → main» كبير جدًا على iOS؟** iOS 15+ ممكن يشغل الـ process قبل ما المستخدم
-يدوس على الأيقونة (pre-warming). لو الـ OS قال كده، أو الفرق أكبر من 10 ثواني، التقرير
-بيكتبه «not counted» ومبيدخلوش في الإجمالي.
+**"process start → main" is huge on iOS?** iOS 15+ can launch the process before the user taps the
+icon (pre-warming). If the OS says so, or the gap is more than 10 seconds, the report marks it
+"not counted" and leaves it out of the total.
 
-**الباكدج بيبطّأ الـ startup نفسه؟** لأ تقريبًا: كل phase = قراءة stopwatch مرتين وكام object.
-الـ native call بيحصل مرة واحدة **بعد** أول frame، مش وقت الإقلاع.
+**Does the package slow down startup itself?** Practically not: each phase is two stopwatch reads
+and a few objects. The native call happens once, **after** the first frame, not during launch.
 
-**ينفع أستخدمه في release؟** آه. الطباعة والـ banner مقفولين افتراضيًا في release، بس القياس و
-`onReport` شغالين، فتقدر تجمع أرقام حقيقية من المستخدمين.
+**Can I use it in release?** Yes. Printing and the banner are off by default in release, but the
+measurement and `onReport` keep working, so you can collect real numbers from users.
 
-**مش بستخدم `trace.runApp`؟** لف الـ app بـ `StartupTracerScope(tracer: trace, child: ...)`
-وخلاص. ولو مش هتستخدم الـ scope خالص، نادِ `markRunApp()` و `markFirstFrameBuilt()` و
-`releaseDeferred()` بنفسك.
+**I don't use `trace.runApp`?** Just wrap the app in `StartupTracerScope(tracer: trace, child: ...)`.
+And if you won't use the scope at all, call `markRunApp()`, `markFirstFrameBuilt()` and
+`releaseDeferred()` yourself.
 
-## ⚖️ الحدود
+## ⚖️ Limitations
 
-- الـ t0 هو سطر `StartupTracer.start()`. أي حاجة قبل `main` (تحميل الـ engine، الـ native init)
-  بتظهر بس كرقم واحد «process start → main»، ومن غير تفاصيل.
-- وقت بداية الـ process بيتحسب بالـ wall clock، فلو الساعة اتظبطت في نفس اللحظة الرقم هيبوظ.
-  على Android قبل API 33 بيبدأ من الـ fork مش من طلب الفتح.
-- «first frame rasterized» محتاج الـ engine يبعت `FrameTiming`. في التستات و headless مش
-  موجود، والتقرير بيقول «built».
-- نصيحة الـ `parallel` تخمين: الباكدج ميعرفش مين معتمد على مين غير من `dependsOnPrevious`.
-- الـ `deferred` بيبدأ بعد أول frame، بس لو شغله تقيل على الـ UI isolate هيفضل ينافس الـ
-  frames اللي بعده. قسّمه أو خليه lazy.
-- الـ `history` في الميموري بس، و hot restart بيمسحه.
-- مفيش native start على web/desktop (بيتكتب unknown).
-- لو `waitForInteractive: true` ومحدش نده `markInteractive`، التقرير مش هيخلص (و`report()`
-  لسه شغال).
-
-</div>
+- t0 is the `StartupTracer.start()` line. Anything before `main` (engine loading, native init)
+  only shows up as a single "process start → main" number, without details.
+- The process start time is computed with the wall clock, so if the clock is adjusted at that same
+  moment the number will be wrong. On Android before API 33 it starts from the fork, not from the
+  launch request.
+- "first frame rasterized" needs the engine to send `FrameTiming`. In tests and headless it isn't
+  available, and the report says "built".
+- The `parallel` advice is a guess: the package only knows what depends on what from
+  `dependsOnPrevious`.
+- `deferred` starts after the first frame, but if its work is heavy on the UI isolate it will still
+  compete with the frames that follow. Split it up or make it lazy.
+- `history` is in memory only, and a hot restart clears it.
+- There is no native start on web/desktop (it is reported as unknown).
+- If `waitForInteractive: true` and nobody calls `markInteractive`, the report won't complete (and
+  `report()` still works).
 
 ## 🛠 API at a glance
 

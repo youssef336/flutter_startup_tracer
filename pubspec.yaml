@@ -1,8 +1,7 @@
 name: flutter_startup_tracer
 description: >-
-  Measure and explain Flutter app startup: process start, phases in main, first
-  frame, interactive and deferred work, with an ASCII waterfall, DevTools
-  timeline events and actionable advice.
+  Measure Flutter app startup from process start to first frame and interactive,
+  with an ASCII waterfall, DevTools timeline events and actionable advice.
 version: 0.1.0
 repository: https://github.com/youssef336/flutter_startup_tracer
 issue_tracker: https://github.com/youssef336/flutter_startup_tracer/issues
