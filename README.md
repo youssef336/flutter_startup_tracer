@@ -1,5 +1,7 @@
 <p align="center"><a href="README.ar.md">العربية</a></p>
 
+<p align="center"><img src="https://raw.githubusercontent.com/youssef336/flutter_startup_tracer/main/screenshots/banner.png" alt="flutter_startup_tracer banner" width="100%"></p>
+
 <h1 align="center">Flutter Startup Tracer</h1>
 
 <p align="center">
